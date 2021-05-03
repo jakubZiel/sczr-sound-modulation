@@ -5,8 +5,9 @@
 #ifndef SCZR_PROJEKT_UTILITIES_H
 #define SCZR_PROJEKT_UTILITIES_H
 
-#define SAMPLESIZE 10
+#define BUFFSIZE 10
+#define MEETING 5 //do 4 bylo dobrze
 
-void displaySample(int *sample);
+void displaySample(int *sample, int length);
 
 #endif //SCZR_PROJEKT_UTILITIES_H

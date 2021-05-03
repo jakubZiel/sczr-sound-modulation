@@ -10,9 +10,6 @@
 
 #include <boost/interprocess/managed_shared_memory.hpp>
 
-#define PBUFFSIZE 10
-
-
 using namespace boost::interprocess;
 
 void producer(){
@@ -20,27 +17,34 @@ void producer(){
     //TODO binding to CPU
 
     //TODO get samples from alsa into buffer
-    int prodBuffer[PBUFFSIZE];
-    for (int i=0; i<PBUFFSIZE; i++)
+    int prodBuffer[BUFFSIZE];
+    for (int i=0; i<BUFFSIZE; i++)
         prodBuffer[i]=i;
 
     //TODO: shared memory created by supervisor, producer -> open_only
-    shared_memory_object::remove("SoundBuffer");
-    managed_shared_memory managed_shm{open_or_create, "SoundBuffer", 1024};
+    //shared_memory_object::remove("SoundBuffer");
+    //std::cout << "jestem tu!";
+    managed_shared_memory shMemory(open_only, "SoundBufferMemory");
 
-    int *i = managed_shm.construct<int>("Sample")[SAMPLESIZE](98);
+    int *i = shMemory.find<int>("producerModifierBuffer").first;
     int *point = i;
 
-    std::cout << "Producer. Place for sample created: " << std::endl;
-    displaySample(point);
+//    int pmbsize = shMemory.get_instance_length(point);
+//    std::cout << "pmbsize: " << pmbsize << std::endl;
 
-    for (int j=0; j<SAMPLESIZE; j++) {
+    std::cout << "Place for sample created by supervisor: " << std::endl;
+    displaySample(i, BUFFSIZE);
+
+    for (int j=0; j<MEETING; j++) {
         //put sample data into shared memory
         *(point + j) = prodBuffer[j];
     }
 
+//    *(point) = prodBuffer[0];
+//    *(point+1) = prodBuffer[1];
+
     std::cout << "Producer. Data put into sample: " << std::endl;
-    displaySample(point);
+    displaySample(i, BUFFSIZE);
 
     std::cout << std::endl;
 
@@ -55,8 +59,8 @@ void producer(){
 //    std::cout << *found << '\n';
 }
 
-void displaySample(int *sample){
-    for (int j=0; j<SAMPLESIZE; j++){
+void displaySample(int *sample, int length){
+    for (int j=0; j<length; j++){
         std::cout << *(sample+j) << ' ';
     }
     std::cout << '\n';
