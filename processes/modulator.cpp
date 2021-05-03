@@ -18,21 +18,33 @@ void modulator(){
     //TODO binding to CPU
 
     //get access to sample in shared memory
-    managed_shared_memory managed_shm{open_only, "SoundBuffer"};
-    int *sample = managed_shm.find<int>("Sample").first;
+    managed_shared_memory shMemory(open_only, "SoundBufferMemory");
+
+    int *i = shMemory.find<int>("producerModifierBuffer").first;
+    int *sampleToModify = i;
+//    int pmbsize = shMemory.get_instance_length("producerModifierBuffer");
+
+//    if (sampleToModify)
+//        std::cout << "jest cos w stm ";
+
+    //get access to place for modified sample
+    int *modifiedSample = shMemory.find<int>("modifierConsumerBuffer").first;
+ //   int mcbsize = shMemory.get_instance_length("modifierConsumerBuffer");
 
     std::cout << "Modulator. Data received: " << std::endl;
-    displaySample(sample);
+    displaySample(sampleToModify, BUFFSIZE);
 
     // change sample data
-    for (int i=0; i<SAMPLESIZE; i++) {
+    for (int i=0; i<MEETING; i++) {
         //put sample data into shared memory
-        *(sample + i) = (*(sample+i))+10;
+        int toMod = *(sampleToModify + i);
+        *(modifiedSample + i) = toMod*10;
+        //*(sample + i) = (*(sample+i))+10;
     }
 
 
     std::cout << "Modulator. Data changed: " << std::endl;
-    displaySample(sample);
+    displaySample(modifiedSample, BUFFSIZE);
     std::cout << std::endl;
 
     //TODO signal the sample is done

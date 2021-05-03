@@ -6,6 +6,7 @@
 #define MQ_SIZE 200
 #include "supervisor.h"
 #include <boost/interprocess/containers/vector.hpp>
+#include <iostream>
 
 
 using namespace boost::interprocess;
@@ -15,6 +16,7 @@ typedef vector<int, shMemAllocator> sharedVector;
 
 
 supervisor::supervisor() {
+    std::cout << "in constructor" << std::endl;
     init();
 }
 
@@ -24,21 +26,30 @@ supervisor::~supervisor() {
     delete modifierConsumer_mq;
     delete shMemory;
 
+    std::cout << "in destructor" << std::endl;
+
     message_queue::remove("producerModifier_mq");
     message_queue::remove("modifierConsumer_mq");
     shared_memory_object::remove("SoundBufferMemory");
 }
 
 void supervisor::init(){
-    init_queues();
+//    std::cout << "kolejki" << std::endl;
+   // init_queues();
+
+    std::cout << "pamiec" << std::endl;
     init_shMemory();
+
+    std::cout << "bufory" << std::endl;
     init_buffers();
+
+    std::cout << "po buforach" << std::endl;
 }
 
 
 void supervisor::init_shMemory(){
 
-    shMemory = new managed_shared_memory (create_only, "SoundBufferMemory", SH_MEMORY_SIZE);
+    shMemory = new managed_shared_memory (open_or_create, "SoundBufferMemory", SH_MEMORY_SIZE);
 }
 
 void supervisor::init_buffers() {
