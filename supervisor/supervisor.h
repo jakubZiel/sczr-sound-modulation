@@ -11,20 +11,18 @@
 
 class supervisor {
 
-    boost::interprocess::message_queue  *producerModifier_mq;
-    boost::interprocess::message_queue  *modifierConsumer_mq;
-    boost::interprocess::managed_shared_memory  *shMemory;
+    boost::interprocess::message_queue  *producerModifier_mq{};
+    boost::interprocess::message_queue  *modifierConsumer_mq{};
+    boost::interprocess::managed_shared_memory  *shMemory{};
 
 
     void init_queues();
     void init_shMemory();
     void init_buffers();
-    void clearPointers();
-
+    void init();
 public :
     supervisor();
-    void init();
-    static void clean();
+    ~supervisor();
 };
 
 

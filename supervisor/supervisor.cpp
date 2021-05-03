@@ -15,9 +15,18 @@ typedef vector<int, shMemAllocator> sharedVector;
 
 
 supervisor::supervisor() {
-    producerModifier_mq = nullptr;
-    modifierConsumer_mq = nullptr;
-    shMemory = nullptr;
+    init();
+}
+
+supervisor::~supervisor() {
+
+    delete producerModifier_mq;
+    delete modifierConsumer_mq;
+    delete shMemory;
+
+    message_queue::remove("producerModifier_mq");
+    message_queue::remove("modifierConsumer_mq");
+    shared_memory_object::remove("SoundBufferMemory");
 }
 
 void supervisor::init(){
@@ -26,19 +35,6 @@ void supervisor::init(){
     init_buffers();
 }
 
-void supervisor::clearPointers(){
-    delete producerModifier_mq;
-    delete modifierConsumer_mq;
-    delete shMemory;
-}
-
-void supervisor::clean(){
-
-    message_queue::remove("producerModifier_mq");
-    message_queue::remove("modifierConsumer_mq");
-
-    shared_memory_object::remove("SoundBufferMemory");
-}
 
 void supervisor::init_shMemory(){
 
