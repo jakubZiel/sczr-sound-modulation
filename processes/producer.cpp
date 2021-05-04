@@ -9,6 +9,7 @@
 #include <stdlib.h>
 
 #include <boost/interprocess/managed_shared_memory.hpp>
+#include <supervisor/supervisor.h>
 
 using namespace boost::interprocess;
 
@@ -21,42 +22,47 @@ void producer(){
     for (int i=0; i<BUFFSIZE; i++)
         prodBuffer[i]=i;
 
-    //TODO: shared memory created by supervisor, producer -> open_only
-    //shared_memory_object::remove("SoundBuffer");
-    //std::cout << "jestem tu!";
+    message_queue modProd_mq(open_only, "modifierProducer_mq");
+    message_queue prodMod_mq(open_only, "producerModifier_mq");
+
+    std::cout << "ile mess w prodMod? " << prodMod_mq.get_num_msg() << std::endl;
+    std::cout << "ile mess w modProd? " << modProd_mq.get_num_msg() << std::endl;
+
+
+    int messageBuffer[1];
+    message_queue::size_type recvd_size;
+    unsigned int priority;
+    while( !modProd_mq.try_receive(&messageBuffer[0], sizeof(int), recvd_size, priority));
+
+    std::cout << "nastepna wolna probka: " << messageBuffer[0] << std::endl;
+
     managed_shared_memory shMemory(open_only, "SoundBufferMemory");
 
-    int *i = shMemory.find<int>("producerModifierBuffer").first;
-    int *point = i;
+    int *sample = shMemory.find<int>("producerModifierBuffer").first;
 
-//    int pmbsize = shMemory.get_instance_length(point);
+//    int pmbsize = shMemory.get_instance_length(sample);
 //    std::cout << "pmbsize: " << pmbsize << std::endl;
 
     std::cout << "Place for sample created by supervisor: " << std::endl;
-    displaySample(i, BUFFSIZE);
+    displaySample(sample, BUFFSIZE);
 
-    for (int j=0; j<MEETING; j++) {
+    for (int j=0; j<BUFFSIZE; j++) {
         //put sample data into shared memory
-        *(point + j) = prodBuffer[j];
+        *(sample + messageBuffer[0] + j) = prodBuffer[j];
     }
 
-//    *(point) = prodBuffer[0];
-//    *(point+1) = prodBuffer[1];
+    //send info about new data in buffer
+
+    //TODO zawiesi sie jesli nie wysle wiadomosci - to raczej zle
+    while (!prodMod_mq.try_send(&messageBuffer[0], sizeof (int), 0));
+    std::cout << "ile mess w prodMod? " << prodMod_mq.get_num_msg() << std::endl;
 
     std::cout << "Producer. Data put into sample: " << std::endl;
-    displaySample(i, BUFFSIZE);
+    displaySample(sample, BUFFSIZE);
 
     std::cout << std::endl;
 
-//    std::pair<int*, std::size_t> p = managed_shm.find<int>("Sample");
-//    if (p.first)
-//    {
-//        std::cout << *p.first << '\n';
-//        std::cout << p.second << '\n';
-//    }
-//
-//    int *found = managed_shm.find<int>("Sample").first;
-//    std::cout << *found << '\n';
+
 }
 
 void displaySample(int *sample, int length){

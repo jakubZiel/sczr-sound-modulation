@@ -12,7 +12,9 @@
 class supervisor {
 
     boost::interprocess::message_queue  *producerModifier_mq{};
+    boost::interprocess::message_queue  *modifierProducer_mq{};
     boost::interprocess::message_queue  *modifierConsumer_mq{};
+    boost::interprocess::message_queue  *consumerModifier_mq{};
     boost::interprocess::managed_shared_memory  *shMemory{};
 
 

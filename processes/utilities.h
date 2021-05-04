@@ -6,7 +6,8 @@
 #define SCZR_PROJEKT_UTILITIES_H
 
 #define BUFFSIZE 10
-#define MEETING 5 //do 4 bylo dobrze
+#define BUFFNUM 3
+
 
 void displaySample(int *sample, int length);
 

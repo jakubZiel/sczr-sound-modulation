@@ -7,8 +7,4 @@
 
 void producer();
 
-
-
-
-
 #endif //SCZR_PROJEKT_PRODUCER_H
