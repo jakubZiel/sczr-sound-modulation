@@ -63,8 +63,8 @@ void supervisor::init_buffers() {
 
 //    shMemory->construct<sharedVector>("producerModifierBuffer")(allocInstance);
 //    shMemory->construct<sharedVector>("modifierConsumerBuffer")(allocInstance);
-    shMemory->construct<int>("producerModifierBuffer")[10](0);
-    shMemory->construct<int>("modifierConsumerBuffer")[10](0);
+    shMemory->construct<int>("producerModifierBuffer")[BUFFSIZE*BUFFNUM](0);
+    shMemory->construct<int>("modifierConsumerBuffer")[BUFFSIZE*BUFFNUM](0);
 }
 
 void supervisor::init_queues(){

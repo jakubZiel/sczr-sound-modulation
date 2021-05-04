@@ -32,7 +32,7 @@ void modulator(){
     std::cout << "ile mess w consMod? " << consMod_mq.get_num_msg() << std::endl;
 
     //is there free space to store modified sample?
-    int messageBuffer[1] = {-1};
+    int messageBuffer[1];
     message_queue::size_type recvd_size;
     unsigned int priority;
 
@@ -48,20 +48,22 @@ void modulator(){
     //get access to sample in shared memory
     managed_shared_memory shMemory(open_only, "SoundBufferMemory");
     int *samplesToModify = shMemory.find<int>("producerModifierBuffer").first;
+    samplesToModify += nextSampleToModifyIndex*BUFFSIZE;
 //    int pmbsize = shMemory.get_instance_length("producerModifierBuffer");
 
     //get access to place for modified sample
     int *modifiedSamples = shMemory.find<int>("modifierConsumerBuffer").first;
  //   int mcbsize = shMemory.get_instance_length("modifierConsumerBuffer");
+    modifiedSamples += modifiedIndex*BUFFSIZE;
 
     std::cout << "Modulator. Data received: " << std::endl;
-    displaySample(samplesToModify + nextSampleToModifyIndex, BUFFSIZE);
+    displaySample(samplesToModify, BUFFSIZE);
 
     // change sample data
     for (int i=0; i<BUFFSIZE; i++) {
         //put sample data into shared memory
-        int toMod = *(samplesToModify+nextSampleToModifyIndex + i);
-        *(modifiedSamples + modifiedIndex + i) = toMod*10;
+        int toMod = *(samplesToModify + i);
+        *(modifiedSamples + i) = toMod*10;
         //*(sample + i) = (*(sample+i))+10;
     }
 
@@ -72,7 +74,7 @@ void modulator(){
     while (!modCons_mq.try_send(&messageBuffer[0], sizeof (int), 0));
 
     std::cout << "Modulator. Data changed: " << std::endl;
-    displaySample(modifiedSamples+modifiedIndex, BUFFSIZE);
+    displaySample(modifiedSamples, BUFFSIZE);
 
     std::cout << "ile mess w prodMod? " << prodMod_mq.get_num_msg() << std::endl;
     std::cout << "ile mess w modProd? " << modProd_mq.get_num_msg() << std::endl;

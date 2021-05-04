@@ -33,6 +33,7 @@ void consumer(){
     managed_shared_memory shMemory(open_only, "SoundBufferMemory");
     int *sample = shMemory.find<int>("modifierConsumerBuffer").first;
  //   int mcbsize = shMemory.get_instance_length("producerModifierBuffer");
+    sample += messageBuffer[0]*BUFFSIZE;
 
     std::cout << "Consumer. Data received: " << std::endl;
     displaySample(sample, BUFFSIZE);
