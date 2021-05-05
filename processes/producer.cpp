@@ -39,7 +39,7 @@ void producer(){
     managed_shared_memory shMemory(open_only, "SoundBufferMemory");
 
     int *sample = shMemory.find<int>("producerModifierBuffer").first;
-
+    sample = sample + messageBuffer[0]*BUFFSIZE;
 //    int pmbsize = shMemory.get_instance_length(sample);
 //    std::cout << "pmbsize: " << pmbsize << std::endl;
 
@@ -48,7 +48,7 @@ void producer(){
 
     for (int j=0; j<BUFFSIZE; j++) {
         //put sample data into shared memory
-        *(sample + messageBuffer[0] + j) = prodBuffer[j];
+        *(sample + j) = prodBuffer[j];
     }
 
     //send info about new data in buffer
