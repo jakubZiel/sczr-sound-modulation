@@ -6,7 +6,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "modulator.h"
 #include "utilities.h"
 
 #include <boost/interprocess/managed_shared_memory.hpp>
@@ -14,7 +13,7 @@
 
 using namespace boost::interprocess;
 
-void modulator(){
+int main(int argc, char *argv[]){
 
     //TODO binding to CPU
 
@@ -36,52 +35,57 @@ void modulator(){
     message_queue::size_type recvd_size;
     unsigned int priority;
 
-    while(!consMod_mq.try_receive(&messageBuffer[0], sizeof(int), recvd_size, priority));
-    int modifiedIndex = messageBuffer[0];
-    std::cout << "miejsce dla nastepnej probki: " << modifiedIndex << std::endl;
 
-    while( !prodMod_mq.try_receive(&messageBuffer[0], sizeof(int), recvd_size, priority));
-    int nextSampleToModifyIndex = messageBuffer[0];
-    std::cout << "nastepna probka do modyfikacji: " << nextSampleToModifyIndex << std::endl;
+    while (true) {
+        while (!consMod_mq.try_receive(&messageBuffer[0], sizeof(int), recvd_size, priority));
+        int modifiedIndex = messageBuffer[0];
+        std::cout << "miejsce dla nastepnej probki: " << modifiedIndex << std::endl;
+
+        while (!prodMod_mq.try_receive(&messageBuffer[0], sizeof(int), recvd_size, priority));
+        int nextSampleToModifyIndex = messageBuffer[0];
+        std::cout << "nastepna probka do modyfikacji: " << nextSampleToModifyIndex << std::endl;
 
 
-    //get access to sample in shared memory
-    managed_shared_memory shMemory(open_only, "SoundBufferMemory");
-    int *samplesToModify = shMemory.find<int>("producerModifierBuffer").first;
-    samplesToModify += nextSampleToModifyIndex*BUFFSIZE;
+        //get access to sample in shared memory
+        managed_shared_memory shMemory(open_only, "SoundBufferMemory");
+        int *samplesToModify = shMemory.find<int>("producerModifierBuffer").first;
+        samplesToModify += nextSampleToModifyIndex * BUFFSIZE;
 //    int pmbsize = shMemory.get_instance_length("producerModifierBuffer");
 
-    //get access to place for modified sample
-    int *modifiedSamples = shMemory.find<int>("modifierConsumerBuffer").first;
- //   int mcbsize = shMemory.get_instance_length("modifierConsumerBuffer");
-    modifiedSamples += modifiedIndex*BUFFSIZE;
+        //get access to place for modified sample
+        int *modifiedSamples = shMemory.find<int>("modifierConsumerBuffer").first;
+        //   int mcbsize = shMemory.get_instance_length("modifierConsumerBuffer");
+        modifiedSamples += modifiedIndex * BUFFSIZE;
 
-    std::cout << "Modulator. Data received: " << std::endl;
-    displaySample(samplesToModify, BUFFSIZE);
+        std::cout << "Modulator. Data received: " << std::endl;
+        displaySample(samplesToModify, BUFFSIZE);
 
-    // change sample data
-    for (int i=0; i<BUFFSIZE; i++) {
-        //put sample data into shared memory
-        int toMod = *(samplesToModify + i);
-        *(modifiedSamples + i) = toMod*10;
-        //*(sample + i) = (*(sample+i))+10;
+        // change sample data
+        for (int i = 0; i < BUFFSIZE; i++) {
+            //put sample data into shared memory
+            int toMod = *(samplesToModify + i);
+            *(modifiedSamples + i) = toMod * 10;
+            //*(sample + i) = (*(sample+i))+10;
+        }
+
+        messageBuffer[0] = nextSampleToModifyIndex;
+        while (!modProd_mq.try_send(&messageBuffer[0], sizeof(int), 0));
+
+        messageBuffer[0] = modifiedIndex;
+        while (!modCons_mq.try_send(&messageBuffer[0], sizeof(int), 0));
+
+        std::cout << "Modulator. Data changed: " << std::endl;
+        displaySample(modifiedSamples, BUFFSIZE);
+
+        std::cout << "ile mess w prodMod? " << prodMod_mq.get_num_msg() << std::endl;
+        std::cout << "ile mess w modProd? " << modProd_mq.get_num_msg() << std::endl;
+        std::cout << "ile mess w modCons? " << modCons_mq.get_num_msg() << std::endl;
+        std::cout << "ile mess w consMod? " << consMod_mq.get_num_msg() << std::endl;
+
+        std::cout << std::endl;
+
     }
 
-    messageBuffer[0] = nextSampleToModifyIndex;
-    while (!modProd_mq.try_send(&messageBuffer[0], sizeof (int), 0));
-
-    messageBuffer[0] = modifiedIndex;
-    while (!modCons_mq.try_send(&messageBuffer[0], sizeof (int), 0));
-
-    std::cout << "Modulator. Data changed: " << std::endl;
-    displaySample(modifiedSamples, BUFFSIZE);
-
-    std::cout << "ile mess w prodMod? " << prodMod_mq.get_num_msg() << std::endl;
-    std::cout << "ile mess w modProd? " << modProd_mq.get_num_msg() << std::endl;
-    std::cout << "ile mess w modCons? " << modCons_mq.get_num_msg() << std::endl;
-    std::cout << "ile mess w consMod? " << consMod_mq.get_num_msg() << std::endl;
-
-    std::cout << std::endl;
-
+    return 0;
 }
 

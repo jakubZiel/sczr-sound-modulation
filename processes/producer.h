@@ -5,6 +5,6 @@
 #ifndef SCZR_PROJEKT_PRODUCER_H
 #define SCZR_PROJEKT_PRODUCER_H
 
-void producer();
+int mainProducer(int argc, char *argv[]);
 
 #endif //SCZR_PROJEKT_PRODUCER_H

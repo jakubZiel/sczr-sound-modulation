@@ -5,15 +5,8 @@
 
 int main(int argc, char *argv[])
 {
-    supervisor Super;
-    producer();
-    producer();
-    modulator();
-    producer();
-    consumer();
-    modulator();
-    consumer();
-    producer();
+
+    supervisor SuperProc;
 
     return 0;
 };
