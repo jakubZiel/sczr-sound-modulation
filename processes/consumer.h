@@ -5,6 +5,6 @@
 #ifndef SCZR_PROJEKT_CONSUMER_H
 #define SCZR_PROJEKT_CONSUMER_H
 
-void consumer();
+int mainConsumer(int argc, char *argv[]);
 
 #endif //SCZR_PROJEKT_CONSUMER_H

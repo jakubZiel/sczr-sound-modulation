@@ -8,7 +8,6 @@
 #define BUFFSIZE 10
 #define BUFFNUM 3
 
-
 void displaySample(int *sample, int length);
 
 #endif //SCZR_PROJEKT_UTILITIES_H

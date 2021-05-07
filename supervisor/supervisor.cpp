@@ -10,11 +10,8 @@
 #include <iostream>
 
 
+
 using namespace boost::interprocess;
-
-//typedef allocator<int, managed_shared_memory::segment_manager>  shMemAllocator;
-//typedef vector<int, shMemAllocator> sharedVector;
-
 
 supervisor::supervisor() {
     std::cout << "in constructor" << std::endl;
@@ -49,6 +46,7 @@ void supervisor::init(){
     init_buffers();
 
     std::cout << "po buforach" << std::endl;
+
 }
 
 
@@ -110,5 +108,6 @@ void supervisor::init_queues(){
         consumerModifier_mq->send(&bufor, sizeof (int), 0);
     }
 }
+
 
 

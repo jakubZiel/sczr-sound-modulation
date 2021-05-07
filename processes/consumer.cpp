@@ -14,7 +14,8 @@
 
 using namespace boost::interprocess;
 
-void consumer(){
+int main(int argc, char *argv[])
+{
 
     //TODO binding to CPU
 
@@ -25,36 +26,39 @@ void consumer(){
     int messageBuffer[1];
     message_queue::size_type recvd_size;
     unsigned int priority;
-    while( !modCons_mq.try_receive(&messageBuffer[0], sizeof(int), recvd_size, priority));
 
-    std::cout << "nastepna probka do wyslania do karty: " << messageBuffer[0] << std::endl;
+    while (true) {
+        while (!modCons_mq.try_receive(&messageBuffer[0], sizeof(int), recvd_size, priority));
 
-    //get access to shared memory
-    managed_shared_memory shMemory(open_only, "SoundBufferMemory");
-    int *sample = shMemory.find<int>("modifierConsumerBuffer").first;
- //   int mcbsize = shMemory.get_instance_length("producerModifierBuffer");
-    sample += messageBuffer[0]*BUFFSIZE;
+        std::cout << "nastepna probka do wyslania do karty: " << messageBuffer[0] << std::endl;
 
-    std::cout << "Consumer. Data received: " << std::endl;
-    displaySample(sample, BUFFSIZE);
+        //get access to shared memory
+        managed_shared_memory shMemory(open_only, "SoundBufferMemory");
+        int *sample = shMemory.find<int>("modifierConsumerBuffer").first;
+        //   int mcbsize = shMemory.get_instance_length("producerModifierBuffer");
+        sample += messageBuffer[0] * BUFFSIZE;
 
-    //get samples from memory into buffer
-    int consBuffer[BUFFSIZE];
+        std::cout << "Consumer. Data received: " << std::endl;
+        displaySample(sample, BUFFSIZE);
 
-    std::cout << "Consumer. Data from sample put into buffer: " << std::endl;
-    for (int j=0; j<BUFFSIZE; j++) {
-        consBuffer[j] = *(sample + j);
-        std::cout << consBuffer[j] << " ";
+        //get samples from memory into buffer
+        int consBuffer[BUFFSIZE];
+
+        std::cout << "Consumer. Data from sample put into buffer: " << std::endl;
+        for (int j = 0; j < BUFFSIZE; j++) {
+            consBuffer[j] = *(sample + j);
+            std::cout << consBuffer[j] << " ";
+        }
+
+        while (!consMod_mq.try_send(&messageBuffer[0], sizeof(int), 0));
+
+        std::cout << std::endl;
+        std::cout << "ile mess w modCons? " << modCons_mq.get_num_msg() << std::endl;
+        std::cout << "ile mess w consMod? " << consMod_mq.get_num_msg() << std::endl;
+
+        //TODO put changed samples to alsa buffer
+
+
     }
-
-    while (!consMod_mq.try_send(&messageBuffer[0], sizeof (int), 0));
-
-    std::cout << std::endl;
-    std::cout << "ile mess w modCons? " << modCons_mq.get_num_msg() << std::endl;
-    std::cout << "ile mess w consMod? " << consMod_mq.get_num_msg() << std::endl;
-
-    //TODO put changed samples to alsa buffer
-
-
-
+    return 0;
 }
