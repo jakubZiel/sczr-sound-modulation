@@ -3,14 +3,12 @@
 //
 
 #include <iostream>
-#include <stdio.h>
-#include <stdlib.h>
-
-#include "consumer.h"
 #include "utilities.h"
 
 #include <boost/interprocess/managed_shared_memory.hpp>
 #include <supervisor/supervisor.h>
+#include <boost/interprocess/sync/named_semaphore.hpp>
+#include "sound/soundModule.h"
 
 using namespace boost::interprocess;
 
@@ -27,38 +25,36 @@ int main(int argc, char *argv[])
     message_queue::size_type recvd_size;
     unsigned int priority;
 
-    while (true) {
-        while (!modCons_mq.try_receive(&messageBuffer[0], sizeof(int), recvd_size, priority));
+    soundModule alsa;
 
-        std::cout << "nastepna probka do wyslania do karty: " << messageBuffer[0] << std::endl;
+
+    int file_d = open("sound.wav", O_WRONLY);
+    int loops = 6897;
+
+
+    while (loops > 0) {
+
+        std::cout << "mq mod-cons : " << modCons_mq.get_num_msg() << std::endl;
+
+        modCons_mq.receive(&messageBuffer[0], sizeof(int), recvd_size, priority);
 
         //get access to shared memory
         managed_shared_memory shMemory(open_only, "SoundBufferMemory");
-        int *sample = shMemory.find<int>("modifierConsumerBuffer").first;
-        //   int mcbsize = shMemory.get_instance_length("producerModifierBuffer");
+        char *sample = shMemory.find<char>("modifierConsumerBuffer").first;
+
         sample += messageBuffer[0] * BUFFSIZE;
 
-        std::cout << "Consumer. Data received: " << std::endl;
-        displaySample(sample, BUFFSIZE);
+        std::cout << "write sample" << 6897 - loops << std::endl;
+        alsa.writeSample(sample, file_d);
+        loops--;
 
         //get samples from memory into buffer
-        int consBuffer[BUFFSIZE];
+        std::cout << "mq cons-mod : " << consMod_mq.get_num_msg() << std::endl;
 
-        std::cout << "Consumer. Data from sample put into buffer: " << std::endl;
-        for (int j = 0; j < BUFFSIZE; j++) {
-            consBuffer[j] = *(sample + j);
-            std::cout << consBuffer[j] << " ";
-        }
-
-        while (!consMod_mq.try_send(&messageBuffer[0], sizeof(int), 0));
-
-        std::cout << std::endl;
-        std::cout << "ile mess w modCons? " << modCons_mq.get_num_msg() << std::endl;
-        std::cout << "ile mess w consMod? " << consMod_mq.get_num_msg() << std::endl;
-
-        //TODO put changed samples to alsa buffer
-
-
+        consMod_mq.send(&messageBuffer[0], sizeof(int), 0);
     }
+
+    close(file_d);
+
     return 0;
 }

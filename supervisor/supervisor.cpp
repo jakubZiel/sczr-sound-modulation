@@ -6,7 +6,6 @@
 #define MQ_SIZE 200
 #include "supervisor.h"
 #include "processes/utilities.h"
-#include <boost/interprocess/containers/vector.hpp>
 #include <iostream>
 
 
@@ -15,10 +14,14 @@ using namespace boost::interprocess;
 
 supervisor::supervisor() {
     std::cout << "in constructor" << std::endl;
+
+    removeAll();
     init();
 }
 
 supervisor::~supervisor() {
+
+    std::cout << "in destructor" << std::endl;
 
     delete producerModifier_mq;
     delete modifierProducer_mq;
@@ -26,8 +29,10 @@ supervisor::~supervisor() {
     delete consumerModifier_mq;
     delete shMemory;
 
-    std::cout << "in destructor" << std::endl;
+    removeAll();
+}
 
+void supervisor::removeAll() {
     message_queue::remove("producerModifier_mq");
     message_queue::remove("modifierProducer_mq");
     message_queue::remove("modifierConsumer_mq");
@@ -36,19 +41,18 @@ supervisor::~supervisor() {
 }
 
 void supervisor::init(){
-    std::cout << "kolejki" << std::endl;
     init_queues();
+    std::cout << "queues" << std::endl;
 
-    std::cout << "pamiec" << std::endl;
+
     init_shMemory();
+    std::cout << "memory" << std::endl;
 
-    std::cout << "bufory" << std::endl;
+
     init_buffers();
-
-    std::cout << "po buforach" << std::endl;
+    std::cout << "buffers" << std::endl;
 
 }
-
 
 void supervisor::init_shMemory(){
 
@@ -57,12 +61,9 @@ void supervisor::init_shMemory(){
 }
 
 void supervisor::init_buffers() {
-//    shMemAllocator allocInstance(shMemory->get_segment_manager());
 
-//    shMemory->construct<sharedVector>("producerModifierBuffer")(allocInstance);
-//    shMemory->construct<sharedVector>("modifierConsumerBuffer")(allocInstance);
-    shMemory->construct<int>("producerModifierBuffer")[BUFFSIZE*BUFFNUM](0);
-    shMemory->construct<int>("modifierConsumerBuffer")[BUFFSIZE*BUFFNUM](0);
+    shMemory->construct<char>("producerModifierBuffer")[BUFFSIZE*BUFFNUM](0);
+    shMemory->construct<char>("modifierConsumerBuffer")[BUFFSIZE*BUFFNUM](0);
 }
 
 void supervisor::init_queues(){
@@ -107,6 +108,8 @@ void supervisor::init_queues(){
         bufor[0]=i;
         consumerModifier_mq->send(&bufor, sizeof (int), 0);
     }
+
+
 }
 
 

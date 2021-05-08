@@ -22,6 +22,7 @@ class supervisor {
     void init_shMemory();
     void init_buffers();
     void init();
+    static void removeAll();
 
 public :
     supervisor();
