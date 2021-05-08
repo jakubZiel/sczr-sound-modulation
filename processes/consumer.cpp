@@ -12,6 +12,8 @@
 
 using namespace boost::interprocess;
 
+
+
 int main(int argc, char *argv[])
 {
 
@@ -28,13 +30,15 @@ int main(int argc, char *argv[])
     soundModule alsa;
 
 
+
+
     int file_d = open("sound.wav", O_WRONLY);
     int loops = 6897;
 
 
     while (loops > 0) {
 
-        std::cout << "mq mod-cons : " << modCons_mq.get_num_msg() << std::endl;
+        std::cout << "recv | mq mod-cons : " << modCons_mq.get_num_msg() << std::endl;
 
         modCons_mq.receive(&messageBuffer[0], sizeof(int), recvd_size, priority);
 
@@ -45,11 +49,11 @@ int main(int argc, char *argv[])
         sample += messageBuffer[0] * BUFFSIZE;
 
         std::cout << "write sample" << 6897 - loops << std::endl;
-        alsa.writeSample(sample, file_d);
+        //alsa.writeSample(sample, file_d);
         loops--;
 
         //get samples from memory into buffer
-        std::cout << "mq cons-mod : " << consMod_mq.get_num_msg() << std::endl;
+        std::cout << "send | mq cons-mod : " << consMod_mq.get_num_msg() << std::endl;
 
         consMod_mq.send(&messageBuffer[0], sizeof(int), 0);
     }

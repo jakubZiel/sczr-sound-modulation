@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
 
         alsa.recordSample(prodBuffer);
 
-        std::cout << "mq mod-prod : " << modProd_mq.get_num_msg() << std::endl;
+        std::cout << "recv | mq mod-prod : " << modProd_mq.get_num_msg() << std::endl;
         modProd_mq.receive(&messageBuffer[0], sizeof(int), recvd_size, priority);
 
         char *sample = shMemory.find<char>("producerModifierBuffer").first;
@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
             *(sample + j) = prodBuffer[j];
         }
 
-        std::cout << "mq prod-mod : " << prodMod_mq.get_num_msg() << std::endl;
+        std::cout << "send | mq prod-mod : " << prodMod_mq.get_num_msg() << std::endl;
 
         prodMod_mq.send(&messageBuffer[0], sizeof(int), 0);
 

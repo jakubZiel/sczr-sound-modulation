@@ -7,9 +7,25 @@
 #include "utilities.h"
 #include <supervisor/supervisor.h>
 #include <boost/interprocess/sync/named_semaphore.hpp>
-
+#include <pthread.h>
 
 using namespace boost::interprocess;
+
+struct mesg{
+    int a;
+    int b;
+}msg;
+
+void* thread_f(void *arg) {
+
+    mesg *a = (mesg *) (arg);
+
+
+    while (true){
+        x= queue.receive();
+        local.push(x)
+    }
+}
 
 int main(int argc, char *argv[]){
 
@@ -21,7 +37,9 @@ int main(int argc, char *argv[]){
     message_queue modCons_mq(open_only, "modifierConsumer_mq");
     message_queue consMod_mq(open_only, "consumerModifier_mq");
 
+    pthread_t thread;
 
+    pthread_create(&thread, NULL, &thread_f, &msg);
 
     //is there free space to store modified sample?
     int messageBuffer[1];
@@ -34,12 +52,12 @@ int main(int argc, char *argv[]){
 
         std::cout << loops << std::endl;
 
-        std::cout << "mq cons-mod : " << consMod_mq.get_num_msg() << std::endl;
+        std::cout << "recv | mq cons-mod : " << consMod_mq.get_num_msg() << std::endl;
 
         consMod_mq.receive(&messageBuffer[0], sizeof(int), recvd_size, priority);
         int spaceToWriteIndex = messageBuffer[0];
 
-        std::cout << "mq prod-mod : " << prodMod_mq.get_num_msg() << std::endl;
+        std::cout << "recv | mq prod-mod : " << prodMod_mq.get_num_msg() << std::endl;
 
         prodMod_mq.receive(&messageBuffer[0], sizeof(int), recvd_size, priority);
         int sampleToModifyIndex = messageBuffer[0];
@@ -65,12 +83,12 @@ int main(int argc, char *argv[]){
 
         loops--;
 
-        std::cout << "mq mod-prod : " << modProd_mq.get_num_msg() << std::endl;
+        std::cout << "send | mq mod-prod : " << modProd_mq.get_num_msg() << std::endl;
 
         messageBuffer[0] = sampleToModifyIndex;
         modProd_mq.send(&messageBuffer[0], sizeof(int), 0);
 
-        std::cout << "mq mod-cons : " << modCons_mq.get_num_msg() << std::endl;
+        std::cout << "send | mq mod-cons : " << modCons_mq.get_num_msg() << std::endl;
 
         messageBuffer[0] = spaceToWriteIndex;
         modCons_mq.send(&messageBuffer[0], sizeof(int), 0);
