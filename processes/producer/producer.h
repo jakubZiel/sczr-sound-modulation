@@ -13,16 +13,18 @@
 class producer {
     boost::interprocess::message_queue *modProd_mq{};
     boost::interprocess::message_queue *prodMod_mq{};
+    boost::interprocess::managed_shared_memory  *shMemory{};
 
-    int messageBuffer[1];
-    boost::interprocess::message_queue::size_type recvd_size;
-    unsigned int priority;
+
+    int messageBuffer[1]{};
+    boost::interprocess::message_queue::size_type recvd_size{};
+    unsigned int priority{};
 
     soundModule alsa;
 
-    char prodBuffer[BUFFSIZE];
+    char prodBuffer[BUFFSIZE]{};
 
-    char *sample;
+    char *sample{};
 
     void init();
 
@@ -30,7 +32,7 @@ public :
     producer();
     ~producer();
 
-    void receiveSamples();
+    void receiveSample();
     void writeSamples();
 
     int getAlsaVal();

@@ -16,6 +16,7 @@ using namespace boost::interprocess;
 
 consumer::consumer(){
     init();
+
 }
 
 consumer::~consumer() {
@@ -30,6 +31,9 @@ void consumer::init() {
     //TODO should be like this, new object?
     modCons_mq = new message_queue(open_only, "modifierConsumer_mq");
     consMod_mq = new message_queue(open_only, "consumerModifier_mq");
+    shMemory = new managed_shared_memory(open_only, "SoundBufferMemory");
+
+
     alsa.openAlsa(PLAYBACK);
     file_d = open("out.wav", O_WRONLY);
 }
@@ -41,9 +45,8 @@ void consumer::receiveSamples() {
 
     //get access to shared memory
     //TODO should be in constructor?
-    managed_shared_memory shMemory(open_only, "SoundBufferMemory");
 
-    sample = shMemory.find<char>("modifierConsumerBuffer").first;
+    sample = shMemory->find<char>("modifierConsumerBuffer").first;
     sample += messageBuffer[0] * BUFFSIZE;
 }
 
