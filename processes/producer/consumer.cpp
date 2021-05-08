@@ -3,7 +3,7 @@
 //
 
 #include <iostream>
-#include "utilities.h"
+#include "processes/utilities.h"
 
 #include <boost/interprocess/managed_shared_memory.hpp>
 #include <supervisor/supervisor.h>
@@ -28,8 +28,6 @@ int main(int argc, char *argv[])
     unsigned int priority;
 
     soundModule alsa;
-
-
 
 
     int file_d = open("sound.wav", O_WRONLY);

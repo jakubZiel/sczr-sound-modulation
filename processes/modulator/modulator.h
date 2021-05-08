@@ -5,6 +5,5 @@
 #ifndef SCZR_PROJEKT_MODULATOR_H
 #define SCZR_PROJEKT_MODULATOR_H
 
-int mainModulator(int argc, char *argv[]);
 
 #endif //SCZR_PROJEKT_MODULATOR_H

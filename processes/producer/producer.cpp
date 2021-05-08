@@ -1,8 +1,8 @@
 //
 // Created by laura on 30.04.2021.
 //
-#include "utilities.h"
-#include "processes/producer.h"
+#include "processes/utilities.h"
+#include "processes/consumer/producer.h"
 
 #include <iostream>
 #include <boost/interprocess/managed_shared_memory.hpp>

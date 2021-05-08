@@ -4,28 +4,12 @@
 
 #include <iostream>
 
-#include "utilities.h"
+#include "processes/utilities.h"
 #include <supervisor/supervisor.h>
 #include <boost/interprocess/sync/named_semaphore.hpp>
 #include <pthread.h>
 
 using namespace boost::interprocess;
-
-struct mesg{
-    int a;
-    int b;
-}msg;
-
-void* thread_f(void *arg) {
-
-    mesg *a = (mesg *) (arg);
-
-
-    while (true){
-        x= queue.receive();
-        local.push(x)
-    }
-}
 
 int main(int argc, char *argv[]){
 
@@ -37,9 +21,6 @@ int main(int argc, char *argv[]){
     message_queue modCons_mq(open_only, "modifierConsumer_mq");
     message_queue consMod_mq(open_only, "consumerModifier_mq");
 
-    pthread_t thread;
-
-    pthread_create(&thread, NULL, &thread_f, &msg);
 
     //is there free space to store modified sample?
     int messageBuffer[1];
