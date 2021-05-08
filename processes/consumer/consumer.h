@@ -5,6 +5,29 @@
 #ifndef SCZR_PROJEKT_CONSUMER_H
 #define SCZR_PROJEKT_CONSUMER_H
 
-int mainConsumer(int argc, char *argv[]);
+#include <sound/soundModule.h>
+
+class consumer {
+    boost::interprocess::message_queue *modCons_mq{};
+    boost::interprocess::message_queue *consMod_mq{};
+
+    int messageBuffer[1];
+    boost::interprocess::message_queue::size_type recvd_size;
+    unsigned int priority;
+    int file_d;
+
+    soundModule alsa;
+
+    char *sample;
+
+    void init();
+
+public :
+    consumer();
+    ~consumer();
+
+    void receiveSamples();
+    void writeSamples();
+};
 
 #endif //SCZR_PROJEKT_CONSUMER_H

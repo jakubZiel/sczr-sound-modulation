@@ -7,63 +7,72 @@
 #include <iostream>
 #include <boost/interprocess/managed_shared_memory.hpp>
 #include "sound/soundModule.h"
-#include <boost/interprocess/sync/named_semaphore.hpp>
 
 
 using namespace boost::interprocess;
 
-int main(int argc, char *argv[])
-{
+producer::producer() {
+    init();
+}
 
-    int wait;
+producer::~producer() {
+    delete modProd_mq;
+    delete prodMod_mq;
+}
 
-    std::cin >> wait;
+void producer::init() {
 
-    message_queue modProd_mq(open_only, "modifierProducer_mq");
-    message_queue prodMod_mq(open_only, "producerModifier_mq");
-
-    int messageBuffer[1];
-    message_queue::size_type recvd_size;
-    unsigned int priority;
-
-    managed_shared_memory shMemory(open_only, "SoundBufferMemory");
-
-    soundModule alsa;
+    modProd_mq = new message_queue(open_only, "modifierProducer_mq");
+    prodMod_mq = new message_queue(open_only, "producerModifier_mq");
 
     alsa.openAlsa(RECORD);
+}
 
-    char prodBuffer[BUFFSIZE];
+void producer::receiveSamples() {
 
-    int loops = (int) (5000000 / alsa.getVal());
+    managed_shared_memory shMemory(open_only, "SoundBufferMemory");
+    alsa.recordSample(prodBuffer);
+
+    std::cout << "recv | mq mod-prod : " << modProd_mq->get_num_msg() << std::endl;
+    modProd_mq->receive(&messageBuffer[0], sizeof(int), recvd_size, priority);
+
+    char *sample = shMemory.find<char>("producerModifierBuffer").first;
+
+    sample = sample + messageBuffer[0] * BUFFSIZE;
+
+    displaySampleChar(sample);
+}
+
+void producer::writeSamples() {
+    for (int j = 0; j < BUFFSIZE; j++) {
+        //put sample data into shared memory
+        *(sample + j) = prodBuffer[j];
+    }
+
+    std::cout << "send | mq prod-mod : " << prodMod_mq->get_num_msg() << std::endl;
+    prodMod_mq->send(&messageBuffer[0], sizeof(int), 0);
+}
+
+int producer::getAlsaVal() {
+    return alsa.getVal();
+}
+
+int main(int argc, char *argv[])
+{
+    producer Producer;
+
+    int wait;
+    std::cin >> wait;
+
+    int loops = (int) (5000000 / Producer.getAlsaVal());
 
     while (loops > 0) {
-        //TODO get samples from alsa into buffer
+
+        Producer.receiveSamples();
 
         std::cout << loops << std::endl;
 
-
-        alsa.recordSample(prodBuffer);
-
-
-
-        std::cout << "recv | mq mod-prod : " << modProd_mq.get_num_msg() << std::endl;
-        modProd_mq.receive(&messageBuffer[0], sizeof(int), recvd_size, priority);
-
-        char *sample = shMemory.find<char>("producerModifierBuffer").first;
-
-        sample = sample + messageBuffer[0] * BUFFSIZE;
-
-        displaySampleChar(sample);
-
-        for (int j = 0; j < BUFFSIZE; j++) {
-            //put sample data into shared memory
-            *(sample + j) = prodBuffer[j];
-        }
-
-        std::cout << "send | mq prod-mod : " << prodMod_mq.get_num_msg() << std::endl;
-
-        prodMod_mq.send(&messageBuffer[0], sizeof(int), 0);
-
+        Producer.writeSamples();
 
         loops--;
     }
