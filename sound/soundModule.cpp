@@ -164,12 +164,12 @@ void soundModule::recordSample(char *buffer) {
 
 void soundModule::writeSample(char* buffer, int file_d){
     rc = write(file_d, buffer, size);
+    std::cout << size << std::endl;
     if (rc != size) {
         fprintf(stderr,
                 "short write: wrote %d bytes errno = %d\n", rc, errno);
-
-        }
     }
+}
 
 unsigned int soundModule::getVal() const {
     return val;

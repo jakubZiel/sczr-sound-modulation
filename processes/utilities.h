@@ -7,7 +7,7 @@
 
 #define BUFFSIZE 128
 #define BUFFNUM 20
-
+void displaySampleChar(char* buffer);
 void displaySample(int *sample, int length);
 
 #endif //SCZR_PROJEKT_UTILITIES_H

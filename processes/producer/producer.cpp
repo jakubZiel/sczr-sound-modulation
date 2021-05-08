@@ -2,7 +2,7 @@
 // Created by laura on 30.04.2021.
 //
 #include "processes/utilities.h"
-#include "processes/consumer/producer.h"
+#include "producer.h"
 
 #include <iostream>
 #include <boost/interprocess/managed_shared_memory.hpp>
@@ -44,12 +44,16 @@ int main(int argc, char *argv[])
 
         alsa.recordSample(prodBuffer);
 
+
+
         std::cout << "recv | mq mod-prod : " << modProd_mq.get_num_msg() << std::endl;
         modProd_mq.receive(&messageBuffer[0], sizeof(int), recvd_size, priority);
 
         char *sample = shMemory.find<char>("producerModifierBuffer").first;
 
         sample = sample + messageBuffer[0] * BUFFSIZE;
+
+        displaySampleChar(sample);
 
         for (int j = 0; j < BUFFSIZE; j++) {
             //put sample data into shared memory

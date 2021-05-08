@@ -16,6 +16,7 @@ supervisor::supervisor() {
     std::cout << "in constructor" << std::endl;
 
     removeAll();
+
     init();
 }
 
@@ -108,8 +109,6 @@ void supervisor::init_queues(){
         bufor[0]=i;
         consumerModifier_mq->send(&bufor, sizeof (int), 0);
     }
-
-
 }
 
 

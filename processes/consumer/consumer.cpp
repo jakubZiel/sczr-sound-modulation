@@ -5,10 +5,11 @@
 #include <iostream>
 #include "processes/utilities.h"
 
-#include <boost/interprocess/managed_shared_memory.hpp>
 #include <supervisor/supervisor.h>
 #include <boost/interprocess/sync/named_semaphore.hpp>
 #include "sound/soundModule.h"
+
+
 
 using namespace boost::interprocess;
 
@@ -28,9 +29,9 @@ int main(int argc, char *argv[])
     unsigned int priority;
 
     soundModule alsa;
+    alsa.openAlsa(PLAYBACK);
 
-
-    int file_d = open("sound.wav", O_WRONLY);
+    int file_d = open("out.wav", O_WRONLY);
     int loops = 6897;
 
 
@@ -47,7 +48,7 @@ int main(int argc, char *argv[])
         sample += messageBuffer[0] * BUFFSIZE;
 
         std::cout << "write sample" << 6897 - loops << std::endl;
-        //alsa.writeSample(sample, file_d);
+        alsa.writeSample(sample, file_d);
         loops--;
 
         //get samples from memory into buffer

@@ -7,7 +7,6 @@
 #include "processes/utilities.h"
 #include <supervisor/supervisor.h>
 #include <boost/interprocess/sync/named_semaphore.hpp>
-#include <pthread.h>
 
 using namespace boost::interprocess;
 
@@ -31,18 +30,17 @@ int main(int argc, char *argv[]){
 
     while (loops > 0) {
 
-        std::cout << loops << std::endl;
-
-        std::cout << "recv | mq cons-mod : " << consMod_mq.get_num_msg() << std::endl;
-
-        consMod_mq.receive(&messageBuffer[0], sizeof(int), recvd_size, priority);
-        int spaceToWriteIndex = messageBuffer[0];
+        std::cout << std::endl << loops << std::endl;
 
         std::cout << "recv | mq prod-mod : " << prodMod_mq.get_num_msg() << std::endl;
 
         prodMod_mq.receive(&messageBuffer[0], sizeof(int), recvd_size, priority);
         int sampleToModifyIndex = messageBuffer[0];
 
+        std::cout << "recv | mq cons-mod : " << consMod_mq.get_num_msg() << std::endl;
+
+        consMod_mq.receive(&messageBuffer[0], sizeof(int), recvd_size, priority);
+        int spaceToWriteIndex = messageBuffer[0];
 
         //get access to sample in shared memory
         managed_shared_memory shMemory(open_only, "SoundBufferMemory");
@@ -58,6 +56,7 @@ int main(int argc, char *argv[]){
         for (int i = 0; i < BUFFSIZE; i++) {
             //put sample data into shared memory
             char toMod = *(samplesToModify + i);
+
             *(modifiedSamples + i) = toMod;
             //*(sample + i) = (*(sample+i))+10;
         }
