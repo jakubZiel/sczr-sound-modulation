@@ -13,16 +13,14 @@ class consumer {
     boost::interprocess::managed_shared_memory *shMemory{};
 
 
-    int messageBuffer[1];
-    boost::interprocess::message_queue::size_type recvd_size;
-    unsigned int priority;
-    int file_d;
+    int messageBuffer[1]{};
+    boost::interprocess::message_queue::size_type recvd_size{};
+    unsigned int priority{};
+    int file_d{};
 
     soundModule alsa;
 
-    char *sample;
-
-    void init();
+    char *sample{};
 
 public :
     consumer();
@@ -30,6 +28,8 @@ public :
 
     void receiveSamples();
     void writeSamples();
+
+    void writeToFile(int loops, char* file);
 };
 
 #endif //SCZR_PROJEKT_CONSUMER_H

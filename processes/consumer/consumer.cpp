@@ -7,7 +7,6 @@
 
 #include <supervisor/supervisor.h>
 #include "consumer.h"
-#include <fcntl.h>
 #include "sound/soundModule.h"
 
 
@@ -15,27 +14,32 @@
 using namespace boost::interprocess;
 
 consumer::consumer(){
-    init();
 
-}
-
-consumer::~consumer() {
-
-    delete modCons_mq;
-    delete consMod_mq;
-
-    close(file_d);
-}
-
-void consumer::init() {
-    //TODO should be like this, new object?
     modCons_mq = new message_queue(open_only, "modifierConsumer_mq");
     consMod_mq = new message_queue(open_only, "consumerModifier_mq");
     shMemory = new managed_shared_memory(open_only, "SoundBufferMemory");
 
 
     alsa.openAlsa(PLAYBACK);
-    file_d = open("out.wav", O_WRONLY);
+
+}
+
+void consumer::writeToFile(int loops, char* file) {
+
+    file_d = open(file, O_WRONLY);
+
+    while (loops > 0) {
+
+        receiveSamples();
+
+        std::cout << "write sample" << 6897 - loops << std::endl;
+
+        writeSamples();
+
+        loops--;
+    }
+
+    close(file_d);
 }
 
 void consumer::receiveSamples() {
@@ -43,8 +47,6 @@ void consumer::receiveSamples() {
 
     modCons_mq->receive(&messageBuffer[0], sizeof(int), recvd_size, priority);
 
-    //get access to shared memory
-    //TODO should be in constructor?
 
     sample = shMemory->find<char>("modifierConsumerBuffer").first;
     sample += messageBuffer[0] * BUFFSIZE;
@@ -59,23 +61,21 @@ void consumer::writeSamples() {
     consMod_mq->send(&messageBuffer[0], sizeof(int), 0);
 }
 
+consumer::~consumer() {
+
+    delete modCons_mq;
+    delete consMod_mq;
+    delete shMemory;
+}
+
 int main(int argc, char *argv[])
 {
 
     consumer Consumer;
-    //TODO binding to CPU
 
     int loops = 6897;
 
-    while (loops > 0) {
-
-        Consumer.receiveSamples();
-
-        std::cout << "write sample" << 6897 - loops << std::endl;
-        Consumer.writeSamples();
-
-        loops--;
-    }
+    Consumer.writeToFile(loops, (char*) "out.wav");
 
     return 0;
 }

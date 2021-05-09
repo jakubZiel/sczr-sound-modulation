@@ -26,14 +26,14 @@ class producer {
 
     char *sample{};
 
-    void init();
 
 public :
-    producer();
+     producer();
     ~producer();
 
-    void receiveSample();
-    void writeSamples();
+    void receiveAndSendSample();
+    void recordAndProduce(int loops);
+
 
     int getAlsaVal();
 };

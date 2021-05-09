@@ -11,7 +11,13 @@
 using namespace boost::interprocess;
 
 modulator::modulator() {
-    init();
+    modProd_mq = new message_queue(open_only, "modifierProducer_mq");
+    prodMod_mq = new message_queue(open_only, "producerModifier_mq");
+
+    modCons_mq = new message_queue(open_only, "modifierConsumer_mq");
+    consMod_mq = new message_queue(open_only, "consumerModifier_mq");
+
+    shMemory = new managed_shared_memory (open_only, "SoundBufferMemory");
 }
 
 modulator::~modulator() {
@@ -19,15 +25,9 @@ modulator::~modulator() {
     delete modProd_mq;
     delete modCons_mq;
     delete consMod_mq;
+    delete shMemory;
 }
 
-void modulator::init() {
-    modProd_mq = new message_queue(open_only, "modifierProducer_mq");
-    prodMod_mq = new message_queue(open_only, "producerModifier_mq");
-
-    modCons_mq = new message_queue(open_only, "modifierConsumer_mq");
-    consMod_mq = new message_queue(open_only, "consumerModifier_mq");
-}
 
 void modulator::receiveSamples() {
     std::cout << "recv | mq prod-mod : " << prodMod_mq->get_num_msg() << std::endl;
@@ -38,14 +38,17 @@ void modulator::receiveSamples() {
     consMod_mq->receive(&messageBuffer[0], sizeof(int), recvd_size, priority);
     spaceToWriteIndex = messageBuffer[0];
 
-    //get access to sample in shared memory
-    managed_shared_memory shMemory(open_only, "SoundBufferMemory");
 
-    samplesToModify = shMemory.find<char>("producerModifierBuffer").first;
+    //get access to sample in shared memory
+
+
+    samplesToModify = shMemory->find<char>("producerModifierBuffer").first;
     samplesToModify += sampleToModifyIndex * BUFFSIZE;
 
-    modifiedSamples = shMemory.find<char>("modifierConsumerBuffer").first;
+    modifiedSamples = shMemory->find<char>("modifierConsumerBuffer").first;
     modifiedSamples += spaceToWriteIndex * BUFFSIZE;
+
+    modulate();
 }
 
 void modulator::modulate() {
@@ -58,7 +61,7 @@ void modulator::modulate() {
     }
 }
 
-void modulator::signalModulated() {
+void modulator::sendModulated() {
     std::cout << "send | mq mod-prod : " << modProd_mq->get_num_msg() << std::endl;
 
     messageBuffer[0] = sampleToModifyIndex;
@@ -85,7 +88,7 @@ int main(int argc, char *argv[]){
         // change sample data
         loops--;
 
-        Modulator.signalModulated();
+        Modulator.sendModulated();
 
     }
     return 0;
