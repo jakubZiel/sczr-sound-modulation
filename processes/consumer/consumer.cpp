@@ -33,6 +33,9 @@ void consumer::writeToFile(char* file) {
     int loops = *(shMemory->find<int>("recordingTime").first);
     loops /= 725;
 
+    latencyRecorder = new measurementModule(loops, OPEN);
+
+    int maxLoops = loops;
 
     file_d = open(file, O_WRONLY);
 
@@ -42,7 +45,7 @@ void consumer::writeToFile(char* file) {
 
         std::cout << "write loop:  " <<  loops << std::endl;
 
-        writeSamples();
+        writeSamples(maxLoops - loops);
 
         if (loops == 3)
             break;
@@ -51,6 +54,8 @@ void consumer::writeToFile(char* file) {
     }
 
     close(file_d);
+
+    latencyRecorder->saveToFile((char*) "data.txt");
 }
 
 void consumer::receiveSamples() {
@@ -63,8 +68,10 @@ void consumer::receiveSamples() {
     sample += messageBuffer[0] * BUFFSIZE;
 }
 
-void consumer::writeSamples() {
+void consumer::writeSamples(int currSample) {
     alsa.writeSample(sample, file_d);
+
+    latencyRecorder->record(currSample, END);
 
     //get samples from memory into buffer
     std::cout << "send | mq cons-mod : " << consMod_mq->get_num_msg() << std::endl;
@@ -77,14 +84,14 @@ consumer::~consumer() {
     delete modCons_mq;
     delete consMod_mq;
     delete shMemory;
+    delete latencyRecorder;
 }
 
 int main(int argc, char *argv[])
 {
 
     consumer Consumer;
-
-    int loops = 6897;
+    std::cout << "consumer\n\n";
 
     Consumer.writeToFile((char*) "out.wav");
 

@@ -7,12 +7,13 @@
 #include "supervisor.h"
 #include "processes/utilities.h"
 #include <iostream>
-
-
+#include <boost/interprocess/managed_shared_memory.hpp>
+#include "measurement/measurementModule.h"
 
 using namespace boost::interprocess;
 
 supervisor::supervisor() {
+
 
     removeAll();
 
@@ -32,6 +33,7 @@ supervisor::~supervisor() {
     delete startRecording;
     delete endRecording;
     delete userInputSem;
+
     removeAll();
 }
 
@@ -64,6 +66,11 @@ void supervisor::start(int howLong){
 
     shMemory->construct<int>("recordingTime")(howLongMicroS);
 
+
+    //TODO
+    latencyRecorder = new measurementModule(howLong / 725, CREATE);
+
+
     for (int i = 0; i < 3; i++)
         userInputSem->post();
 
@@ -76,7 +83,7 @@ void supervisor::wait() {
 
 void supervisor::init_shMemory(){
 
-    shMemory = new managed_shared_memory (open_or_create, "SoundBufferMemory", SH_MEMORY_SIZE);
+    shMemory = new managed_shared_memory (open_or_create, "SoundBufferMemory", SH_MEMORY_SIZE / 16);
 
 }
 

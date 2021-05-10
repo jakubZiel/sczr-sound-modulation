@@ -8,17 +8,19 @@
 #include <boost/interprocess/ipc/message_queue.hpp>
 #include <boost/interprocess/managed_shared_memory.hpp>
 #include <sound/soundModule.h>
-
+#include "measurement/measurementModule.h"
 
 class producer {
     boost::interprocess::message_queue *modProd_mq{};
     boost::interprocess::message_queue *prodMod_mq{};
     boost::interprocess::managed_shared_memory  *shMemory{};
 
+    measurementModule* latencyRecorder{};
 
     int messageBuffer[1]{};
     boost::interprocess::message_queue::size_type recvd_size{};
     unsigned int priority{};
+
 
     soundModule alsa;
 
@@ -31,7 +33,7 @@ public :
      producer();
     ~producer();
 
-    void receiveAndSendSample();
+    void receiveAndSendSample(int currSample);
     void recordAndProduce();
 
 

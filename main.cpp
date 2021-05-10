@@ -31,10 +31,9 @@ int main(int argc, char *argv[])
     }else {
         errno = -1;
         fprintf(stderr, "only verbose mode :%d\n", errno);
-        return -1;
     }
 
-
+    std::cin >> start;
 
     std::cout << "\n\n\n3 sec till recording" << std::endl;
     sleep(1);
@@ -55,10 +54,12 @@ int main(int argc, char *argv[])
     bool playback;
     std::cin >> playback;
 
+    howLong *= 1000000;
+
     if (playback){
         soundModule alsa;
         alsa.openAlsa(PLAYBACK);
-        alsa.play(5000000, (char*)"out.wav");
+        alsa.play(howLong, (char*)"out.wav");
     }
 
     return 0;

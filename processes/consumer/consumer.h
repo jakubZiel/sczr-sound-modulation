@@ -6,12 +6,14 @@
 #define SCZR_PROJEKT_CONSUMER_H
 
 #include <sound/soundModule.h>
+#include "measurement/measurementModule.h"
 
 class consumer {
     boost::interprocess::message_queue *modCons_mq{};
     boost::interprocess::message_queue *consMod_mq{};
     boost::interprocess::managed_shared_memory *shMemory{};
 
+    measurementModule* latencyRecorder{};
 
     int messageBuffer[1]{};
     boost::interprocess::message_queue::size_type recvd_size{};
@@ -27,7 +29,7 @@ public :
     ~consumer();
 
     void receiveSamples();
-    void writeSamples();
+    void writeSamples(int currSample);
 
     void writeToFile(char* file);
 };

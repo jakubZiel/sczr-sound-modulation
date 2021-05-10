@@ -20,11 +20,14 @@ producer::~producer() {
     delete modProd_mq;
     delete prodMod_mq;
     delete shMemory;
+    delete latencyRecorder;
 }
 
-void producer::receiveAndSendSample() {
+void producer::receiveAndSendSample(int currSample) {
 
     alsa.recordSample(prodBuffer);
+
+    latencyRecorder->record(currSample, START);
 
     std::cout << "recv | mq mod-prod : " << modProd_mq->get_num_msg() << std::endl;
 
@@ -40,7 +43,6 @@ void producer::receiveAndSendSample() {
         *(sample + j) = prodBuffer[j];
 
     }
-
 
     std::cout << "send | mq prod-mod : " << prodMod_mq->get_num_msg() << std::endl;
 
@@ -60,18 +62,22 @@ void producer::recordAndProduce() {
 
     input.wait();
 
+
     int loops = *(shMemory->find<int>("recordingTime").first);
     loops /= 725;
 
+    //TODO
+    latencyRecorder = new measurementModule(loops, OPEN);
 
     start.wait();
 
     alsa.openAlsa(RECORD);
 
+    int maxLoops = loops;
 
     while (loops > 0) {
 
-        receiveAndSendSample();
+        receiveAndSendSample(maxLoops - loops);
 
         std::cout << loops << std::endl;
 
@@ -85,9 +91,7 @@ void producer::recordAndProduce() {
 int main(int argc, char *argv[])
 {
     producer Producer;
-
-
-    int loops = (int) (5000000 / 725);
+    std::cout << "producer\n\n";
 
     Producer.recordAndProduce();
 

@@ -78,6 +78,8 @@ int main(int argc, char *argv[]){
 
     modulator Modulator;
 
+    std::cout << "modulator\n\n";
+
     named_semaphore input(open_only, "userInputSem");
 
     input.wait();
