@@ -32,7 +32,7 @@ public :
     ~producer();
 
     void receiveAndSendSample();
-    void recordAndProduce(int loops);
+    void recordAndProduce();
 
 
     int getAlsaVal();

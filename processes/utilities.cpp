@@ -13,7 +13,7 @@ void displaySample(int *sample, int length){
 
 void displaySampleChar(char* buffer){
 
-    for (int i = 0; i <BUFFSIZE; i++)
+    for (int i = 0; i < BUFFSIZE; i++)
         std::cout << buffer[i];
 
     std::cout <<std::endl;

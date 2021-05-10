@@ -13,7 +13,6 @@
 using namespace boost::interprocess;
 
 supervisor::supervisor() {
-    std::cout << "in constructor" << std::endl;
 
     removeAll();
 
@@ -24,12 +23,15 @@ supervisor::~supervisor() {
 
     std::cout << "in destructor" << std::endl;
 
+
     delete producerModifier_mq;
     delete modifierProducer_mq;
     delete modifierConsumer_mq;
     delete consumerModifier_mq;
     delete shMemory;
-
+    delete startRecording;
+    delete endRecording;
+    delete userInputSem;
     removeAll();
 }
 
@@ -38,21 +40,38 @@ void supervisor::removeAll() {
     message_queue::remove("modifierProducer_mq");
     message_queue::remove("modifierConsumer_mq");
     message_queue::remove("consumerModifier_mq");
+    named_semaphore::remove("startSemaphore");
+    named_semaphore::remove("endSemaphore");
     shared_memory_object::remove("SoundBufferMemory");
+    named_semaphore::remove("userInputSem");
+
 }
 
 void supervisor::init(){
     init_queues();
-    std::cout << "queues" << std::endl;
-
 
     init_shMemory();
-    std::cout << "memory" << std::endl;
-
 
     init_buffers();
-    std::cout << "buffers" << std::endl;
 
+    init_sems();
+    std::cout << "supervisor initialized" << std::endl;
+}
+
+void supervisor::start(int howLong){
+
+    int howLongMicroS = howLong * 1000000;
+
+    shMemory->construct<int>("recordingTime")(howLongMicroS);
+
+    for (int i = 0; i < 3; i++)
+        userInputSem->post();
+
+    startRecording->post();
+}
+
+void supervisor::wait() {
+    endRecording->wait();
 }
 
 void supervisor::init_shMemory(){
@@ -111,5 +130,9 @@ void supervisor::init_queues(){
     }
 }
 
-
+void supervisor::init_sems(){
+    startRecording = new named_semaphore(create_only, "startSemaphore", 0);
+    endRecording = new named_semaphore(create_only, "endSemaphore", 0);
+    userInputSem = new named_semaphore(create_only, "userInputSem", 0);
+}
 

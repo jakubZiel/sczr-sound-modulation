@@ -6,8 +6,6 @@
 int main() {
     soundModule alsa;
 
-
-
     alsa.openAlsa(PLAYBACK);
     alsa.play(5000000, (char*) "out.wav");
 }

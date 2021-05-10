@@ -78,7 +78,12 @@ int main(int argc, char *argv[]){
 
     modulator Modulator;
 
-    int loops = 6897;
+    named_semaphore input(open_only, "userInputSem");
+
+    input.wait();
+
+    int loops = *(Modulator.shMemory->find<int>("recordingTime").first);
+    loops /= 725;
 
     while (loops > 0) {
 
@@ -89,6 +94,8 @@ int main(int argc, char *argv[]){
         // change sample data
         loops--;
 
+        if (loops == 1)
+            break;
         Modulator.sendModulated();
 
     }

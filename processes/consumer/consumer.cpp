@@ -24,7 +24,15 @@ consumer::consumer(){
 
 }
 
-void consumer::writeToFile(int loops, char* file) {
+void consumer::writeToFile(char* file) {
+
+    named_semaphore input(open_only, "userInputSem");
+
+    input.wait();
+
+    int loops = *(shMemory->find<int>("recordingTime").first);
+    loops /= 725;
+
 
     file_d = open(file, O_WRONLY);
 
@@ -32,9 +40,12 @@ void consumer::writeToFile(int loops, char* file) {
 
         receiveSamples();
 
-        std::cout << "write sample" << 6897 - loops << std::endl;
+        std::cout << "write loop:  " <<  loops << std::endl;
 
         writeSamples();
+
+        if (loops == 3)
+            break;
 
         loops--;
     }
@@ -75,7 +86,7 @@ int main(int argc, char *argv[])
 
     int loops = 6897;
 
-    Consumer.writeToFile(loops, (char*) "out.wav");
+    Consumer.writeToFile((char*) "out.wav");
 
     return 0;
 }

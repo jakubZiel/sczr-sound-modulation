@@ -29,7 +29,7 @@ public :
     void receiveSamples();
     void writeSamples();
 
-    void writeToFile(int loops, char* file);
+    void writeToFile(char* file);
 };
 
 #endif //SCZR_PROJEKT_CONSUMER_H

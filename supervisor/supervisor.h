@@ -7,7 +7,7 @@
 
 #include <boost/interprocess/ipc/message_queue.hpp>
 #include <boost/interprocess/managed_shared_memory.hpp>
-
+#include <boost/interprocess/sync/named_semaphore.hpp>
 
 class supervisor {
 
@@ -16,15 +16,21 @@ class supervisor {
     boost::interprocess::message_queue  *modifierConsumer_mq{};
     boost::interprocess::message_queue  *consumerModifier_mq{};
     boost::interprocess::managed_shared_memory  *shMemory{};
-
+    boost::interprocess::named_semaphore *startRecording{};
+    boost::interprocess::named_semaphore *endRecording{};
+    boost::interprocess::named_semaphore *userInputSem{};
 
     void init_queues();
     void init_shMemory();
     void init_buffers();
+    void init_sems();
+
     void init();
     static void removeAll();
 
 public :
+    void start(int howLong);
+    void wait();
     supervisor();
     ~supervisor();
 };

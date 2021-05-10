@@ -6,7 +6,7 @@
 
 #include <iostream>
 #include "sound/soundModule.h"
-
+#include <boost/interprocess/sync/named_semaphore.hpp>
 
 using namespace boost::interprocess;
 
@@ -14,13 +14,7 @@ producer::producer() {
     modProd_mq = new message_queue(open_only, "modifierProducer_mq");
     prodMod_mq = new message_queue(open_only, "producerModifier_mq");
     shMemory = new managed_shared_memory (open_only, "SoundBufferMemory");
-
-    alsa.openAlsa(RECORD);
-
 }
-
-
-
 
 producer::~producer() {
     delete modProd_mq;
@@ -57,11 +51,25 @@ int producer::getAlsaVal() {
     return alsa.getVal();
 }
 
-void producer::recordAndProduce(int loops) {
+void producer::recordAndProduce() {
+
+    named_semaphore start(open_only, "startSemaphore");
+    named_semaphore end(open_only, "endSemaphore");
+
+    named_semaphore input(open_only, "userInputSem");
+
+    input.wait();
+
+    int loops = *(shMemory->find<int>("recordingTime").first);
+    loops /= 725;
+
+
+    start.wait();
+
+    alsa.openAlsa(RECORD);
 
 
     while (loops > 0) {
-
 
         receiveAndSendSample();
 
@@ -69,20 +77,19 @@ void producer::recordAndProduce(int loops) {
 
         loops--;
     }
+
+    end.post();
+
 }
 
 int main(int argc, char *argv[])
 {
     producer Producer;
 
-    int wait;
 
-    int loops = (int) (5000000 / Producer.getAlsaVal());
+    int loops = (int) (5000000 / 725);
 
-
-    std::cin >> wait;
-
-    Producer.recordAndProduce(loops);
+    Producer.recordAndProduce();
 
     return 0;
 }

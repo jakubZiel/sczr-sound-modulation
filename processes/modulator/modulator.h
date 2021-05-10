@@ -11,8 +11,6 @@ class modulator {
     boost::interprocess::message_queue *modProd_mq;
     boost::interprocess::message_queue *modCons_mq;
     boost::interprocess::message_queue *consMod_mq;
-    boost::interprocess::managed_shared_memory  *shMemory;
-
 
     int messageBuffer[1]{};
     boost::interprocess::message_queue::size_type recvd_size{};
@@ -25,6 +23,9 @@ class modulator {
 
 
 public :
+
+    boost::interprocess::managed_shared_memory  *shMemory;
+
     modulator();
     ~modulator();
 
