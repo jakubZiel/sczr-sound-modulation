@@ -71,6 +71,7 @@ void consumer::receiveSamples() {
 void consumer::writeSamples(int currSample) {
     alsa.writeSample(sample, file_d);
 
+
     latencyRecorder->record(currSample, END);
 
     //get samples from memory into buffer

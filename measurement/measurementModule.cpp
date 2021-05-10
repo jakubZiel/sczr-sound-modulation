@@ -17,34 +17,37 @@ measurementModule::measurementModule(int size, int mode) : size(size), sampleCou
     if (mode == CREATE) {
         shared_memory_object::remove("memo");
 
-        shMemory = new managed_shared_memory(create_only, "memo",  4096);
+        shMemory = new managed_shared_memory(create_only, "memo",  100 * 4096);
 
-        shMemory->construct<int>("clock");
-        shMemory->construct<time_point<system_clock>>("measurementBufferStart")[size];
-        shMemory->construct<time_point<system_clock>>("measurementBufferEnd")[size];
+        shMemory->construct<time_point<system_clock>>("measurementBufferStart")[size]();
+        shMemory->construct<time_point<system_clock>>("measurementBufferEnd")[size]();
+
+
     }else {
 
         shMemory = new managed_shared_memory (open_only, "memo");
     }
 
 
-   int * tick = shMemory->find<int>("clock").first;
 
     bufferStart = shMemory->find<time_point<system_clock>>("measurementBufferStart").first;
     bufferEnd = shMemory->find<time_point<system_clock>>("measurementBufferEnd").first;
-
 }
 
 measurementModule::~measurementModule() {
-    shared_memory_object::remove("measurementMemory");
+    shared_memory_object::remove("memo");
 }
 
 void measurementModule::record(int index, int type) {
+
+    std::cout << size << std::endl;
+
     if (type == START){
         bufferStart[index] = system_clock::now();
 
     }else if (type == END){
         bufferEnd[index] = system_clock::now();
+
     }
 }
 
@@ -58,9 +61,9 @@ void measurementModule::saveToFile(char *outputFile) {
 
             auto diff = bufferEnd[i] - bufferStart[i];
 
-            std::time_t end = std::chrono::system_clock::to_time_t(bufferEnd[i]);
-            std::time_t start = std::chrono::system_clock::to_time_t(bufferStart[i]);
+            auto diff2 = duration_cast<microseconds>(bufferEnd[i] - bufferStart[i]);
 
+            outFile << "diff : " << diff2.count() << std::endl;
         }
 
     }else{
