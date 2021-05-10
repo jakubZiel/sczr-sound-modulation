@@ -8,7 +8,7 @@
 #include <supervisor/supervisor.h>
 #include "consumer.h"
 #include "sound/soundModule.h"
-
+#include "fcntl.h"
 
 
 using namespace boost::interprocess;
@@ -36,6 +36,8 @@ void consumer::writeToFile(char* file) {
     latencyRecorder = new measurementModule(loops, OPEN);
 
     int maxLoops = loops;
+    int displayedSamplelength = loops/SAMPLESDISPLAYED;
+    bool recordLatency = false;
 
     file_d = open(file, O_WRONLY);
 
@@ -45,7 +47,11 @@ void consumer::writeToFile(char* file) {
 
         std::cout << "write loop:  " <<  loops << std::endl;
 
-        writeSamples(maxLoops - loops);
+        if (loops%displayedSamplelength == 0)
+            recordLatency = true;
+        else recordLatency = false;
+
+        writeSamples(maxLoops - loops, recordLatency);
 
         if (loops == 3)
             break;
@@ -68,11 +74,11 @@ void consumer::receiveSamples() {
     sample += messageBuffer[0] * BUFFSIZE;
 }
 
-void consumer::writeSamples(int currSample) {
+void consumer::writeSamples(int currSample, bool recordLatency) {
     alsa.writeSample(sample, file_d);
 
-
-    latencyRecorder->record(currSample, END);
+    if (recordLatency)
+        latencyRecorder->record(currSample, END);
 
     //get samples from memory into buffer
     std::cout << "send | mq cons-mod : " << consMod_mq->get_num_msg() << std::endl;

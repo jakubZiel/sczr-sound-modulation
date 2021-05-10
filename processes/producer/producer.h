@@ -33,7 +33,7 @@ public :
      producer();
     ~producer();
 
-    void receiveAndSendSample(int currSample);
+    void receiveAndSendSample(int currSample, bool recordLatency);
     void recordAndProduce();
 
 

@@ -29,7 +29,7 @@ public :
     ~consumer();
 
     void receiveSamples();
-    void writeSamples(int currSample);
+    void writeSamples(int currSample, bool recordLatency);
 
     void writeToFile(char* file);
 };

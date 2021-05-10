@@ -23,11 +23,12 @@ producer::~producer() {
     delete latencyRecorder;
 }
 
-void producer::receiveAndSendSample(int currSample) {
+void producer::receiveAndSendSample(int currSample, bool recordLatency) {
 
     alsa.recordSample(prodBuffer);
 
-    latencyRecorder->record(currSample, START);
+    if (recordLatency)
+        latencyRecorder->record(currSample, START);
 
     std::cout << "recv | mq mod-prod : " << modProd_mq->get_num_msg() << std::endl;
 
@@ -74,10 +75,16 @@ void producer::recordAndProduce() {
     alsa.openAlsa(RECORD);
 
     int maxLoops = loops;
+    int displayedSamplelength = loops/SAMPLESDISPLAYED;
+    bool recordLatency = false;
 
     while (loops > 0) {
 
-        receiveAndSendSample(maxLoops - loops);
+        if (loops%displayedSamplelength == 0)
+            recordLatency = true;
+        else recordLatency = false;
+
+        receiveAndSendSample(maxLoops - loops, recordLatency);
 
         std::cout << loops << std::endl;
 
