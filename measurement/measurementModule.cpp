@@ -13,19 +13,26 @@ using namespace std::chrono;
 measurementModule::measurementModule(int size, int mode) : size(size), sampleCounter(0) {
 
 
-    shared_memory_object::remove("measurementMemory");
-    shMemory = new managed_shared_memory(open_or_create, "measurementMemory",  4096 * 100);
-
 
     if (mode == CREATE) {
+        shared_memory_object::remove("memo");
 
-        shMemory->construct<milliseconds>("measurementBufferStart")[size](0);
-        shMemory->construct<milliseconds>("measurementBufferEnd")[size](0);
+        shMemory = new managed_shared_memory(create_only, "memo",  4096);
+
+        shMemory->construct<int>("clock");
+        shMemory->construct<time_point<system_clock>>("measurementBufferStart")[size];
+        shMemory->construct<time_point<system_clock>>("measurementBufferEnd")[size];
+    }else {
+
+        shMemory = new managed_shared_memory (open_only, "memo");
     }
 
 
+   int * tick = shMemory->find<int>("clock").first;
+
     bufferStart = shMemory->find<time_point<system_clock>>("measurementBufferStart").first;
     bufferEnd = shMemory->find<time_point<system_clock>>("measurementBufferEnd").first;
+
 }
 
 measurementModule::~measurementModule() {

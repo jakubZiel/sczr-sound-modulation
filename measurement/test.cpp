@@ -6,8 +6,7 @@
 #include <iostream>
 int main(){
 
-    measurementModule measure(10, OPEN);
-
+    measurementModule measure(10, CREATE);
     int x;
     for (int i = 0; i < 10; i++){
 
