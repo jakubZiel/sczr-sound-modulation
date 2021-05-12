@@ -1,8 +1,10 @@
-file = 'data/data4.txt'
-testName = 'FIFO - 500k - loaded'
 import matplotlib.pyplot as plt
 
 from decimal import Decimal
+
+file = 'data/data4.txt'
+testName = 'FIFO - 500k - loaded'
+
 arr = []
 arrI = []
 
