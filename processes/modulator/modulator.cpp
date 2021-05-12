@@ -90,6 +90,16 @@ void modulator::sendModulated() {
 
 int main(int argc, char *argv[]){
 
+    struct sched_param p;
+    p.sched_priority = 99;
+
+
+    sched_setscheduler(0 , SCHED_FIFO, &p);
+    if (sched_getscheduler(0) != SCHED_FIFO)
+        return -1;
+
+    std::cout << "FIFO" << std::endl;
+
     modulator Modulator;
 
     std::cout << "modulator\n\n";

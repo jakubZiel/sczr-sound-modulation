@@ -67,7 +67,7 @@ void measurementModule::saveToFile(char *outputFile) {
             sum += diff.count();
 
             if (i % frequency == 0){
-                outFile << "diff : " << sum / frequency / 1000 << std::endl;
+                outFile << sum / frequency / 1000 << std::endl;
                 sum = 0;
             }
         }
