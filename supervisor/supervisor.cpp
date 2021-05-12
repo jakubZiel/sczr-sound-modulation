@@ -6,63 +6,90 @@
 #define MQ_SIZE 200
 #include "supervisor.h"
 #include "processes/utilities.h"
-#include <boost/interprocess/containers/vector.hpp>
 #include <iostream>
-
-
+#include <boost/interprocess/managed_shared_memory.hpp>
+#include "measurement/measurementModule.h"
 
 using namespace boost::interprocess;
 
 supervisor::supervisor() {
-    std::cout << "in constructor" << std::endl;
+
+
+    removeAll();
+
     init();
 }
 
 supervisor::~supervisor() {
+
+    std::cout << "in destructor" << std::endl;
+
 
     delete producerModifier_mq;
     delete modifierProducer_mq;
     delete modifierConsumer_mq;
     delete consumerModifier_mq;
     delete shMemory;
+    delete startRecording;
+    delete endRecording;
+    delete userInputSem;
 
-    std::cout << "in destructor" << std::endl;
+    removeAll();
+}
 
+void supervisor::removeAll() {
     message_queue::remove("producerModifier_mq");
     message_queue::remove("modifierProducer_mq");
     message_queue::remove("modifierConsumer_mq");
     message_queue::remove("consumerModifier_mq");
+    named_semaphore::remove("startSemaphore");
+    named_semaphore::remove("endSemaphore");
     shared_memory_object::remove("SoundBufferMemory");
+    named_semaphore::remove("userInputSem");
+
 }
 
 void supervisor::init(){
-    std::cout << "kolejki" << std::endl;
     init_queues();
 
-    std::cout << "pamiec" << std::endl;
     init_shMemory();
 
-    std::cout << "bufory" << std::endl;
     init_buffers();
 
-    std::cout << "po buforach" << std::endl;
-
+    init_sems();
+    std::cout << "supervisor initialized" << std::endl;
 }
 
+void supervisor::start(int howLong, double volumeChange){
+
+    int howLongMicroS = howLong * 1000000;
+
+    shMemory->construct<int>("recordingTime")(howLongMicroS);
+    shMemory->construct<double>("volumeChange")(volumeChange);
+
+    latencyRecorder = new measurementModule(howLong / 725, CREATE);
+
+    for (int i = 0; i < 3; i++)
+        userInputSem->post();
+
+    startRecording->post();
+}
+
+void supervisor::wait() {
+    endRecording->wait();
+}
 
 void supervisor::init_shMemory(){
 
-    shMemory = new managed_shared_memory (open_or_create, "SoundBufferMemory", SH_MEMORY_SIZE);
+    shMemory = new managed_shared_memory (open_or_create, "SoundBufferMemory", SH_MEMORY_SIZE / 16);
 
 }
 
 void supervisor::init_buffers() {
-//    shMemAllocator allocInstance(shMemory->get_segment_manager());
 
-//    shMemory->construct<sharedVector>("producerModifierBuffer")(allocInstance);
-//    shMemory->construct<sharedVector>("modifierConsumerBuffer")(allocInstance);
-    shMemory->construct<int>("producerModifierBuffer")[BUFFSIZE*BUFFNUM](0);
-    shMemory->construct<int>("modifierConsumerBuffer")[BUFFSIZE*BUFFNUM](0);
+    shMemory->construct<char>("producerModifierBuffer")[BUFFSIZE*BUFFNUM](0);
+    shMemory->construct<char>("modifierConsumerBuffer")[BUFFSIZE*BUFFNUM](0);
+    shMemory->construct<char>("unmodifiedBuffer")[BUFFSIZE*BUFFNUM](0);
 }
 
 void supervisor::init_queues(){
@@ -109,5 +136,9 @@ void supervisor::init_queues(){
     }
 }
 
-
+void supervisor::init_sems(){
+    startRecording = new named_semaphore(create_only, "startSemaphore", 0);
+    endRecording = new named_semaphore(create_only, "endSemaphore", 0);
+    userInputSem = new named_semaphore(create_only, "userInputSem", 0);
+}
 
