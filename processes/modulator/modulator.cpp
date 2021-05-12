@@ -72,7 +72,8 @@ void modulator::modulate(double volumeChange) {
         *(modifiedSamples + i) = toMod;
     }
 
-   //for (int i = 0; i < 500000; i++);
+    //artificial cpu cycles
+    //for (int i = 0; i < 350000; i++);
 }
 
 void modulator::sendModulated() {
@@ -88,7 +89,6 @@ void modulator::sendModulated() {
 }
 
 int main(int argc, char *argv[]){
-
 
     modulator Modulator;
 

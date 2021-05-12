@@ -23,7 +23,6 @@ class modulator {
 
     char *unmodifiedSamples{};
 
-
 public :
 
     void saveUnmodified();

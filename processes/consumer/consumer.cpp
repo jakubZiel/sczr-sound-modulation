@@ -102,7 +102,6 @@ consumer::~consumer() {
 int main(int argc, char *argv[])
 {
 
-
     consumer Consumer;
     std::cout << "consumer\n\n";
 
