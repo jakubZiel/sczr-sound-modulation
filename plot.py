@@ -2,8 +2,8 @@ import matplotlib.pyplot as plt
 
 from decimal import Decimal
 
-file = 'data/data7.txt'
-testName = 'FIFO - 0k - not loaded'
+file = 'data/data8.txt'
+testName = 'RR - 0k - loaded'
 
 arr = []
 arrI = []

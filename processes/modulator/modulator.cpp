@@ -72,7 +72,7 @@ void modulator::modulate(double volumeChange) {
         *(modifiedSamples + i) = toMod;
     }
 
-    //artificial cpu cycles
+    //artificial cpu cycles only used during performance testing
     //for (int i = 0; i < 350000; i++);
 }
 
@@ -90,6 +90,7 @@ void modulator::sendModulated() {
 
 int main(int argc, char *argv[]){
 
+    /* only used during performance testing
     struct sched_param p;
     p.sched_priority = 99;
 
@@ -99,7 +100,7 @@ int main(int argc, char *argv[]){
         return -1;
 
     std::cout << "FIFO" << std::endl;
-
+    */
     modulator Modulator;
 
     std::cout << "modulator\n\n";
