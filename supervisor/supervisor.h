@@ -32,7 +32,7 @@ class supervisor {
     static void removeAll();
 
 public :
-    void start(int howLong);
+    void start(int howLong, double volumeChange);
     void wait();
     supervisor();
     ~supervisor();

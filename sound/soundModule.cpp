@@ -109,7 +109,11 @@ void soundModule::playSample(int file_d, char* buffer) {
     }
 }
 
+
 void soundModule::play(int howLong, char *inputFile) {
+
+
+
     int loops = (int) (howLong / val);
 
     int file_d = open(inputFile, O_RDONLY);
@@ -128,6 +132,7 @@ void soundModule::play(int howLong, char *inputFile) {
 
 }
 
+
 void soundModule::record(int howLong, char *outFile) {
     int loops = (int) (howLong / val);
 
@@ -139,12 +144,14 @@ void soundModule::record(int howLong, char *outFile) {
         std::cout << loops << std::endl;
         loops--;
         recordSample(buffer);
+
         writeSample(buffer, file_d);
     }
 
     snd_pcm_close(handle);
     free(buffer);
 }
+
 
 void soundModule::recordSample(char *buffer) {
 
@@ -164,7 +171,6 @@ void soundModule::recordSample(char *buffer) {
 
 void soundModule::writeSample(char* buffer, int file_d){
     rc = write(file_d, buffer, size);
-    std::cout << size << std::endl;
     if (rc != size) {
         fprintf(stderr,
                 "short write: wrote %d bytes errno = %d\n", rc, errno);

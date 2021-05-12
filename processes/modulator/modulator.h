@@ -21,16 +21,20 @@ class modulator {
     char *samplesToModify{};
     char *modifiedSamples{};
 
+    char *unmodifiedSamples{};
+
 
 public :
+
+    void saveUnmodified();
 
     boost::interprocess::managed_shared_memory  *shMemory;
 
     modulator();
     ~modulator();
 
-    void receiveSamples();
-    void modulate();
+    void receiveSamples(double volumeChange);
+    void modulate(double change);
     void sendModulated();
 };
 

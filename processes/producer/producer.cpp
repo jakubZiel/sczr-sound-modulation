@@ -37,11 +37,9 @@ void producer::receiveAndSendSample(int currSample) {
 
     sample = sample + messageBuffer[0] * BUFFSIZE;
 
-
     for (int j = 0; j < BUFFSIZE; j++) {
         //put sample data into shared memory
         *(sample + j) = prodBuffer[j];
-
     }
 
     std::cout << "send | mq prod-mod : " << prodMod_mq->get_num_msg() << std::endl;
@@ -66,7 +64,6 @@ void producer::recordAndProduce() {
     int loops = *(shMemory->find<int>("recordingTime").first);
     loops /= 725;
 
-    //TODO
     latencyRecorder = new measurementModule(loops, OPEN);
 
     start.wait();
@@ -90,6 +87,9 @@ void producer::recordAndProduce() {
 
 int main(int argc, char *argv[])
 {
+
+
+
     producer Producer;
     std::cout << "producer\n\n";
 

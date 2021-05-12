@@ -7,6 +7,7 @@
 
 #define BUFFSIZE 128
 #define BUFFNUM 5
+#define DISPLAYEDSAMPLES 40
 
 void displaySampleChar(char* buffer);
 void displaySample(int *sample, int length);

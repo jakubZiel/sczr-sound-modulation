@@ -18,6 +18,8 @@ modulator::modulator() {
     consMod_mq = new message_queue(open_only, "consumerModifier_mq");
 
     shMemory = new managed_shared_memory (open_only, "SoundBufferMemory");
+
+
 }
 
 modulator::~modulator() {
@@ -29,7 +31,7 @@ modulator::~modulator() {
 }
 
 
-void modulator::receiveSamples() {
+void modulator::receiveSamples(double volumeChange) {
     std::cout << "recv | mq prod-mod : " << prodMod_mq->get_num_msg() << std::endl;
     prodMod_mq->receive(&messageBuffer[0], sizeof(int), recvd_size, priority);
     sampleToModifyIndex = messageBuffer[0];
@@ -41,24 +43,36 @@ void modulator::receiveSamples() {
 
     //get access to sample in shared memory
 
-
     samplesToModify = shMemory->find<char>("producerModifierBuffer").first;
     samplesToModify += sampleToModifyIndex * BUFFSIZE;
 
     modifiedSamples = shMemory->find<char>("modifierConsumerBuffer").first;
     modifiedSamples += spaceToWriteIndex * BUFFSIZE;
 
-    modulate();
+
+    unmodifiedSamples = shMemory->find<char>("unmodifiedBuffer").first;
+    unmodifiedSamples += spaceToWriteIndex * BUFFSIZE;
+
+    modulate(volumeChange);
+
+    saveUnmodified();
 }
 
-void modulator::modulate() {
+void modulator::saveUnmodified() {
+    memcpy(unmodifiedSamples, samplesToModify, BUFFSIZE);
+}
+
+void modulator::modulate(double volumeChange) {
     for (int i = 0; i < BUFFSIZE; i++) {
+        int16_t toMod = *(samplesToModify + i);
+
+        toMod *= volumeChange;
         //put sample data into shared memory
-        char toMod = *(samplesToModify + i);
 
         *(modifiedSamples + i) = toMod;
-        //*(sample + i) = (*(sample+i))+10;
     }
+
+   //for (int i = 0; i < 500000; i++);
 }
 
 void modulator::sendModulated() {
@@ -87,17 +101,20 @@ int main(int argc, char *argv[]){
     int loops = *(Modulator.shMemory->find<int>("recordingTime").first);
     loops /= 725;
 
+    double volumeChange = *(Modulator.shMemory->find<double>("volumeChange").first);
+
     while (loops > 0) {
 
         std::cout << std::endl << loops << std::endl;
 
-        Modulator.receiveSamples();
+        Modulator.receiveSamples(volumeChange);
 
         // change sample data
         loops--;
 
         if (loops == 1)
             break;
+
         Modulator.sendModulated();
 
     }

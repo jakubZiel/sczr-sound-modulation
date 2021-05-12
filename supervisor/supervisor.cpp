@@ -60,16 +60,14 @@ void supervisor::init(){
     std::cout << "supervisor initialized" << std::endl;
 }
 
-void supervisor::start(int howLong){
+void supervisor::start(int howLong, double volumeChange){
 
     int howLongMicroS = howLong * 1000000;
 
     shMemory->construct<int>("recordingTime")(howLongMicroS);
+    shMemory->construct<double>("volumeChange")(volumeChange);
 
-
-    //TODO
     latencyRecorder = new measurementModule(howLong / 725, CREATE);
-
 
     for (int i = 0; i < 3; i++)
         userInputSem->post();
@@ -91,6 +89,7 @@ void supervisor::init_buffers() {
 
     shMemory->construct<char>("producerModifierBuffer")[BUFFSIZE*BUFFNUM](0);
     shMemory->construct<char>("modifierConsumerBuffer")[BUFFSIZE*BUFFNUM](0);
+    shMemory->construct<char>("unmodifiedBuffer")[BUFFSIZE*BUFFNUM](0);
 }
 
 void supervisor::init_queues(){

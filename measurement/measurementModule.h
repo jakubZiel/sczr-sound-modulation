@@ -18,7 +18,6 @@ class measurementModule {
     std::chrono::time_point<std::chrono::system_clock> startTime;
 
     int size;
-    int sampleCounter;
     boost::interprocess::managed_shared_memory *shMemory;
 
     std::chrono::time_point<std::chrono::system_clock>* bufferStart;

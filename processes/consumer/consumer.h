@@ -19,10 +19,12 @@ class consumer {
     boost::interprocess::message_queue::size_type recvd_size{};
     unsigned int priority{};
     int file_d{};
+    int original_file_d{};
 
     soundModule alsa;
 
     char *sample{};
+    char *originalSample{};
 
 public :
     consumer();

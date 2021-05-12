@@ -14,13 +14,17 @@ int main(int argc, char *argv[])
 
     std::cin >> start;
 
-
     std::cout << "How long do you want to record?" << std::endl;
 
     int howLong;
 
     std::cin >> howLong;
 
+    std::cout << "How do you want to change sound volume" << std::endl;
+
+    double volumeChange;
+
+    std::cin >> volumeChange;
 
     if (mode != nullptr && strcmp(mode, "-verbose") == 0){
 
@@ -33,8 +37,6 @@ int main(int argc, char *argv[])
         fprintf(stderr, "only verbose mode :%d\n", errno);
     }
 
-    std::cin >> start;
-
     std::cout << "\n\n\n3 sec till recording" << std::endl;
     sleep(1);
     std::cout << "2 sec till recording" << std::endl;
@@ -43,13 +45,13 @@ int main(int argc, char *argv[])
     sleep(1);
     std::cout << "Recording started!" << std::endl;
 
-    SuperProc.start(howLong);
+    SuperProc.start(howLong, volumeChange);
 
     SuperProc.wait();
 
     std::cout << "Recording ended!" << std::endl;
 
-    std::cout << "Do you want to play it back?" << std::endl << std::endl;
+    std::cout << "Do you want to play original back?" << std::endl << std::endl;
 
     bool playback;
     std::cin >> playback;
@@ -59,8 +61,17 @@ int main(int argc, char *argv[])
     if (playback){
         soundModule alsa;
         alsa.openAlsa(PLAYBACK);
-        alsa.play(howLong, (char*)"out.wav");
+        alsa.play(howLong, (char*)"original.wav");
     }
 
+    std::cout << "Do you want to play x" << volumeChange << " version back?" << std::endl << std::endl;
+
+    std::cin >> playback;
+
+    if (playback){
+        soundModule alsa;
+        alsa.openAlsa(PLAYBACK);
+        alsa.play(howLong, (char*)"out.wav");
+    }
     return 0;
 };

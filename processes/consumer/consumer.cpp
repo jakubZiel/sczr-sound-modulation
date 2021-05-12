@@ -19,9 +19,8 @@ consumer::consumer(){
     consMod_mq = new message_queue(open_only, "consumerModifier_mq");
     shMemory = new managed_shared_memory(open_only, "SoundBufferMemory");
 
-
+    //consumer doesn't playback, but it has to be initialized
     alsa.openAlsa(PLAYBACK);
-
 }
 
 void consumer::writeToFile(char* file) {
@@ -37,7 +36,14 @@ void consumer::writeToFile(char* file) {
 
     int maxLoops = loops;
 
+    truncate(file, 0);
     file_d = open(file, O_WRONLY);
+
+    char *original_file = (char*) "original.wav";
+
+    truncate(original_file, 0);
+    original_file_d = open(original_file, O_WRONLY);
+
 
     while (loops > 0) {
 
@@ -54,6 +60,7 @@ void consumer::writeToFile(char* file) {
     }
 
     close(file_d);
+    close(original_file_d);
 
     latencyRecorder->saveToFile((char*) "data.txt");
 }
@@ -63,16 +70,19 @@ void consumer::receiveSamples() {
 
     modCons_mq->receive(&messageBuffer[0], sizeof(int), recvd_size, priority);
 
-
     sample = shMemory->find<char>("modifierConsumerBuffer").first;
     sample += messageBuffer[0] * BUFFSIZE;
-}
 
+    originalSample = shMemory->find<char>("unmodifiedBuffer").first;
+    originalSample += messageBuffer[0] * BUFFSIZE;
+}
 void consumer::writeSamples(int currSample) {
     alsa.writeSample(sample, file_d);
 
-
     latencyRecorder->record(currSample, END);
+    alsa.writeSample(originalSample, original_file_d);
+
+
 
     //get samples from memory into buffer
     std::cout << "send | mq cons-mod : " << consMod_mq->get_num_msg() << std::endl;
@@ -86,10 +96,12 @@ consumer::~consumer() {
     delete consMod_mq;
     delete shMemory;
     delete latencyRecorder;
+    delete originalSample;
 }
 
 int main(int argc, char *argv[])
 {
+
 
     consumer Consumer;
     std::cout << "consumer\n\n";
