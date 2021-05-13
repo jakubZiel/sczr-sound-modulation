@@ -73,7 +73,7 @@ void modulator::modulate(double volumeChange) {
     }
 
     //artificial cpu cycles only used during performance testing
-   // for (int i = 0; i < 500000; i++);
+    for (int i = 0; i < 500000; i++);
 }
 
 void modulator::sendModulated() {
