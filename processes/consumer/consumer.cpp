@@ -101,9 +101,22 @@ consumer::~consumer() {
 
 int main(int argc, char *argv[])
 {
+    //testing purposes
+    /*
+    cpu_set_t cpuSet;
+    CPU_ZERO(&cpuSet);
+    CPU_SET(7, &cpuSet);
+    CPU_SET(6, &cpuSet);
+    CPU_SET(5, &cpuSet);
+    CPU_SET(4, &cpuSet);
+    if (sched_setaffinity(0, sizeof(cpuSet), &cpuSet) == -1)
+        std::cout << "didn't set the cpu :" << errno << std::endl;
+    else
+        std::cout << "cpu set to :" << sched_getcpu() << std::endl;
 
+    */
     consumer Consumer;
-    std::cout << "consumer\n\n";
+    std::cout << " consumer\n\n";
 
     Consumer.writeToFile((char*) "out.wav");
 

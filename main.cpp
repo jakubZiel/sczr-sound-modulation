@@ -3,6 +3,15 @@
 #include "sound/soundModule.h"
 int main(int argc, char *argv[])
 {
+    cpu_set_t cpuSet;
+    CPU_ZERO(&cpuSet);
+    CPU_SET(7, &cpuSet);
+
+    if (sched_setaffinity(0, sizeof(cpuSet), &cpuSet) == -1)
+        std::cout << "didn't set the cpu :" << errno << std::endl;
+    else
+        std::cout << "cpu set to :" << sched_getcpu() << std::endl;
+
 
     char* mode = argv[1];
 
